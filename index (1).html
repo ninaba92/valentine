@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💝 Valentine's Website</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #ffeef8 0%, #ffe0f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(255, 105, 180, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '💕';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 100px;
+            opacity: 0.1;
+        }
+
+        h1 {
+            color: #d63384;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #d63384;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #666;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffc0cb;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #d63384;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff6b9d 0%, #d63384 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(214, 51, 132, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .puzzle-container {
+            margin: 30px 0;
+        }
+
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f0f0f0;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .puzzle-piece {
+            aspect-ratio: 1;
+            background-size: 300% 300%;
+            border: 2px solid #fff;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-radius: 5px;
+        }
+
+        .puzzle-piece:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .puzzle-piece.selected {
+            border: 3px solid #d63384;
+            transform: scale(1.05);
+        }
+
+        .final-screen {
+            text-align: center;
+        }
+
+        .hearts {
+            font-size: 3em;
+            margin: 20px 0;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .message {
+            color: #d63384;
+            font-size: 1.5em;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+
+        .instruction {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+            font-size: 1.1em;
+        }
+
+        .transition-screen {
+            text-align: center;
+        }
+
+        .transition-message {
+            font-size: 1.8em;
+            color: #d63384;
+            margin: 30px 0;
+            line-height: 1.5;
+        }
+
+        .flowers-diamonds {
+            font-size: 4em;
+            margin: 30px 0;
+            animation: sparkle 2s infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+        }
+
+        .final-message {
+            font-size: 2em;
+            color: #d63384;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(214, 51, 132, 0.2);
+        }
+
+        .wrong-answer {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 5em;
+            color: #dc3545;
+            font-weight: bold;
+            z-index: 1000;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            animation: bonk 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes bonk {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); }
+            50% { transform: translate(-50%, -50%) scale(1.2) rotate(5deg); }
+            100% { transform: translate(-50%, -50%) scale(0) rotate(0deg); }
+        }
+
+        .setup-note {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .url-output {
+            background: #e7f3ff;
+            border: 2px solid #2196F3;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .url-box {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            word-break: break-all;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .copy-button {
+            background: #2196F3;
+            margin-top: 10px;
+        }
+
+        .copy-button:hover {
+            background: #1976D2;
+        }
+
+        .image-upload-area {
+            border: 2px dashed #ffc0cb;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+        }
+
+        .image-upload-area:hover {
+            border-color: #d63384;
+            background: #fff5f8;
+        }
+
+        .image-upload-area.has-image {
+            border-style: solid;
+        }
+
+        #imagePreview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Setup Screen -->
+        <div id="setupScreen" class="screen active">
+            <h1>💝 Create Your Valentine's Website</h1>
+            <p class="instruction">Customize your questions and get a shareable link!</p>
+            
+            <div class="setup-note">
+                <strong>📝 How it works:</strong> Fill in your info below, then click "Generate Link". You'll get a special URL to send to your partner!
+            </div>
+
+            <div class="question">
+                <label>Your Name:</label>
+                <input type="text" id="setupName" placeholder="e.g., Nina">
+            </div>
+
+            <h2>Question 1</h2>
+            <div class="question">
+                <label>Question:</label>
+                <input type="text" id="setupQ1" value="Are you in love?">
+            </div>
+            <div class="question">
+                <label>Correct Answer (must include this word):</label>
+                <input type="text" id="setupA1" value="yes" placeholder="e.g., yes">
+            </div>
+
+            <h2>Question 2</h2>
+            <div class="question">
+                <label>Question:</label>
+                <input type="text" id="setupQ2" value="Who are you in love with?">
+            </div>
+            <div class="question">
+                <label>Correct Answer (must include this word):</label>
+                <input type="text" id="setupA2" placeholder="e.g., Nina, my wife">
+            </div>
+
+            <h2>Question 3</h2>
+            <div class="question">
+                <label>Question:</label>
+                <input type="text" id="setupQ3" value="Do you want to make love?">
+            </div>
+            <div class="question">
+                <label>Correct Answer (must include this word):</label>
+                <input type="text" id="setupA3" value="yes" placeholder="e.g., yes">
+            </div>
+
+            <div class="question">
+                <label>Upload Your Couple Photo:</label>
+                <div class="image-upload-area" id="uploadArea" onclick="document.getElementById('photoInput').click()">
+                    <div class="upload-icon">📸</div>
+                    <p>Click to upload your photo</p>
+                    <img id="imagePreview" src="" alt="Preview">
+                </div>
+                <input type="file" id="photoInput" accept="image/*" style="display: none;">
+            </div>
+
+            <button onclick="generateLink()">Generate Your Link! 🔗</button>
+
+            <div id="urlOutput" class="url-output" style="display: none;">
+                <h2>✨ Your Link is Ready!</h2>
+                <p style="margin-bottom: 10px;">Click the button below to copy your link, then send it to your partner!</p>
+                <button class="copy-button" onclick="copyUrl()">📋 Click to Copy Your URL</button>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #666;">After copying, paste it in a text/email to send to them!</p>
+            </div>
+        </div>
+
+        <!-- Screen 1: Questions -->
+        <div id="screen1" class="screen">
+            <h1>💝 Answer These Questions...</h1>
+            
+            <div class="question">
+                <label id="q1Label">Are you in love?</label>
+                <input type="text" id="q1" placeholder="Your answer...">
+            </div>
+
+            <div class="question">
+                <label id="q2Label">Who are you in love with?</label>
+                <input type="text" id="q2" placeholder="Your answer...">
+            </div>
+
+            <div class="question">
+                <label id="q3Label">Do you want to make love?</label>
+                <input type="text" id="q3" placeholder="Your answer...">
+            </div>
+
+            <button onclick="checkQuestions()">Continue →</button>
+        </div>
+
+        <!-- Screen 2: Transition Message -->
+        <div id="screen2" class="screen">
+            <div class="transition-screen">
+                <div class="hearts">💕 💖 💕</div>
+                <p class="transition-message">
+                    Then I will highly suggest you do this...
+                </p>
+                <button onclick="showPuzzle()">Continue →</button>
+            </div>
+        </div>
+
+        <!-- Screen 3: Puzzle -->
+        <div id="screen3" class="screen">
+            <h1>🤖 Verification Required</h1>
+            <p class="instruction">Solve this puzzle to prove that you are not a robot, but an emotionally intelligent, aware, and empathetic person.</p>
+            
+            <div class="puzzle-container">
+                <p class="instruction" style="font-size: 0.95em; margin-top: 20px;">Click two pieces to swap them and complete the puzzle!</p>
+                <div class="puzzle-grid" id="puzzleGrid"></div>
+            </div>
+
+            <button onclick="checkPuzzle()">Verify ✓</button>
+        </div>
+
+        <!-- Screen 4: Final Message -->
+        <div id="screen4" class="screen">
+            <div class="final-screen">
+                <div class="flowers-diamonds">💐 💎 🌹 💎 💐</div>
+                <div class="flowers-diamonds">🌺 ✨ 🌸 ✨ 🌺</div>
+                <p class="final-message" id="finalMessage">
+                    Don't forget to ask her<br>to be your Valentine! 💕
+                </p>
+                <div class="flowers-diamonds">🌷 💎 🌹 💎 🌷</div>
+                <div class="flowers-diamonds">💐 ✨ 🌺 ✨ 💐</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Music -->
+    <audio id="bgMusic" loop>
+        <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Configuration variables
+        let config = {
+            name: '',
+            q1: { text: 'Are you in love?', answer: 'yes' },
+            q2: { text: 'Who are you in love with?', answer: '' },
+            q3: { text: 'Do you want to make love?', answer: 'yes' },
+            photo: ''
+        };
+        let puzzleState = [];
+        let selectedPiece = null;
+
+        // Background music
+        const music = document.getElementById('bgMusic');
+        music.volume = 0.3;
+        
+        document.addEventListener('click', function() {
+            music.play().catch(e => console.log('Audio play failed:', e));
+        }, { once: true });
+
+        // Photo upload
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('imagePreview').src = event.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('uploadArea').classList.add('has-image');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Check if URL has parameters (user is viewing the experience)
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.has('config')) {
+                try {
+                    const configData = JSON.parse(atob(urlParams.get('config')));
+                    loadConfiguration(configData);
+                } catch (e) {
+                    console.error('Invalid configuration');
+                }
+            }
+        });
+
+        let generatedUrl = '';
+
+        function generateLink() {
+            // Get all values
+            const name = document.getElementById('setupName').value.trim();
+            const q1Text = document.getElementById('setupQ1').value.trim();
+            const q1Answer = document.getElementById('setupA1').value.trim().toLowerCase();
+            const q2Text = document.getElementById('setupQ2').value.trim();
+            const q2Answer = document.getElementById('setupA2').value.trim().toLowerCase();
+            const q3Text = document.getElementById('setupQ3').value.trim();
+            const q3Answer = document.getElementById('setupA3').value.trim().toLowerCase();
+            const photoFile = document.getElementById('photoInput').files[0];
+            
+            // Validation
+            if (!name) {
+                alert('Please enter your name!');
+                return;
+            }
+            if (!q1Answer || !q2Answer || !q3Answer) {
+                alert('Please fill in all the correct answers!');
+                return;
+            }
+            if (!photoFile) {
+                alert('Please upload a couple photo!');
+                return;
+            }
+            
+            // Read photo and generate URL
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const configData = {
+                    name: name,
+                    q1: { text: q1Text, answer: q1Answer },
+                    q2: { text: q2Text, answer: q2Answer },
+                    q3: { text: q3Text, answer: q3Answer },
+                    photo: e.target.result
+                };
+                
+                // Encode configuration as base64
+                const encodedConfig = btoa(JSON.stringify(configData));
+                
+                // Generate URL
+                const baseUrl = window.location.href.split('?')[0];
+                generatedUrl = `${baseUrl}?config=${encodedConfig}`;
+                
+                // Show button
+                document.getElementById('urlOutput').style.display = 'block';
+                
+                // Scroll to URL
+                document.getElementById('urlOutput').scrollIntoView({ behavior: 'smooth' });
+            };
+            reader.readAsDataURL(photoFile);
+        }
+
+        function copyUrl() {
+            navigator.clipboard.writeText(generatedUrl).then(() => {
+                alert('✅ Link copied to clipboard! Now paste it in a text or email to send to your partner! 💕');
+            }).catch(() => {
+                alert('❌ Couldn\'t copy automatically. Here\'s your link:\n\n' + generatedUrl);
+            });
+        }
+
+        function loadConfiguration(configData) {
+            config = configData;
+            
+            // Update UI
+            document.getElementById('q1Label').textContent = config.q1.text;
+            document.getElementById('q2Label').textContent = config.q2.text;
+            document.getElementById('q3Label').textContent = config.q3.text;
+            document.getElementById('finalMessage').innerHTML = 
+                `Don't forget to ask ${config.name}<br>to be your Valentine! 💕`;
+            
+            // Hide setup, show questions
+            document.getElementById('setupScreen').classList.remove('active');
+            document.getElementById('screen1').classList.add('active');
+        }
+
+        function showWrongAnswer() {
+            const wrongDiv = document.createElement('div');
+            wrongDiv.className = 'wrong-answer';
+            wrongDiv.textContent = '❌ WRONG ANSWER! ❌';
+            document.body.appendChild(wrongDiv);
+            
+            // Play BONK sound
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 100;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+            
+            setTimeout(() => wrongDiv.remove(), 600);
+        }
+
+        function checkQuestions() {
+            const a1 = document.getElementById('q1').value.trim().toLowerCase();
+            const a2 = document.getElementById('q2').value.trim().toLowerCase();
+            const a3 = document.getElementById('q3').value.trim().toLowerCase();
+            
+            if (!a1.includes(config.q1.answer)) {
+                showWrongAnswer();
+                return;
+            }
+            if (!a2.includes(config.q2.answer)) {
+                showWrongAnswer();
+                return;
+            }
+            if (!a3.includes(config.q3.answer)) {
+                showWrongAnswer();
+                return;
+            }
+            
+            document.getElementById('screen1').classList.remove('active');
+            document.getElementById('screen2').classList.add('active');
+        }
+
+        function showPuzzle() {
+            document.getElementById('screen2').classList.remove('active');
+            document.getElementById('screen3').classList.add('active');
+            initializePuzzle();
+        }
+
+        function initializePuzzle() {
+            puzzleState = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+            
+            for (let i = 0; i < 50; i++) {
+                const idx1 = Math.floor(Math.random() * 9);
+                const idx2 = Math.floor(Math.random() * 9);
+                [puzzleState[idx1], puzzleState[idx2]] = [puzzleState[idx2], puzzleState[idx1]];
+            }
+            
+            renderPuzzle();
+        }
+
+        function renderPuzzle() {
+            const grid = document.getElementById('puzzleGrid');
+            grid.innerHTML = '';
+            
+            puzzleState.forEach((pieceIndex, position) => {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                
+                const row = Math.floor(pieceIndex / 3);
+                const col = pieceIndex % 3;
+                
+                piece.style.backgroundImage = `url(${config.photo})`;
+                piece.style.backgroundPosition = `${-col * 100}% ${-row * 100}%`;
+                piece.dataset.position = position;
+                piece.onclick = () => selectPiece(position);
+                
+                grid.appendChild(piece);
+            });
+        }
+
+        function selectPiece(position) {
+            const pieces = document.querySelectorAll('.puzzle-piece');
+            
+            if (selectedPiece === null) {
+                selectedPiece = position;
+                pieces[position].classList.add('selected');
+            } else {
+                pieces[selectedPiece].classList.remove('selected');
+                
+                if (selectedPiece !== position) {
+                    [puzzleState[selectedPiece], puzzleState[position]] = 
+                        [puzzleState[position], puzzleState[selectedPiece]];
+                    renderPuzzle();
+                }
+                
+                selectedPiece = null;
+            }
+        }
+
+        function checkPuzzle() {
+            const solved = puzzleState.every((val, idx) => val === idx);
+            
+            if (solved) {
+                document.getElementById('screen3').classList.remove('active');
+                document.getElementById('screen4').classList.add('active');
+            } else {
+                alert('Not quite! Keep trying to solve the puzzle! 💕');
+            }
+        }
+    </script>
+</body>
+</html>
