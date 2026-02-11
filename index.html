@@ -459,19 +459,54 @@
             music.play().catch(e => console.log('Audio play failed:', e));
         }, { once: true });
 
-        // Photo upload
+        // Photo upload with compression
         document.getElementById('photoInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
+                    // Show preview
                     document.getElementById('imagePreview').src = event.target.result;
                     document.getElementById('imagePreview').style.display = 'block';
                     document.getElementById('uploadArea').classList.add('has-image');
+                    
+                    // Compress image
+                    compressImage(event.target.result);
                 };
                 reader.readAsDataURL(file);
             }
         });
+
+        let compressedPhoto = '';
+
+        function compressImage(dataUrl) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Resize to max 400x400
+                let width = img.width;
+                let height = img.height;
+                const maxSize = 400;
+                
+                if (width > height && width > maxSize) {
+                    height = (height * maxSize) / width;
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width = (width * maxSize) / height;
+                    height = maxSize;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Compress to 60% quality
+                compressedPhoto = canvas.toDataURL('image/jpeg', 0.6);
+            };
+            img.src = dataUrl;
+        }
 
         // Check if URL has parameters (user is viewing the experience)
         window.addEventListener('DOMContentLoaded', function() {
@@ -498,7 +533,6 @@
             const q2Answer = document.getElementById('setupA2').value.trim().toLowerCase();
             const q3Text = document.getElementById('setupQ3').value.trim();
             const q3Answer = document.getElementById('setupA3').value.trim().toLowerCase();
-            const photoFile = document.getElementById('photoInput').files[0];
             
             // Validation
             if (!name) {
@@ -509,36 +543,31 @@
                 alert('Please fill in all the correct answers!');
                 return;
             }
-            if (!photoFile) {
+            if (!compressedPhoto) {
                 alert('Please upload a couple photo!');
                 return;
             }
             
-            // Read photo and generate URL
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const configData = {
-                    name: name,
-                    q1: { text: q1Text, answer: q1Answer },
-                    q2: { text: q2Text, answer: q2Answer },
-                    q3: { text: q3Text, answer: q3Answer },
-                    photo: e.target.result
-                };
-                
-                // Encode configuration as base64
-                const encodedConfig = btoa(JSON.stringify(configData));
-                
-                // Generate URL
-                const baseUrl = window.location.href.split('?')[0];
-                generatedUrl = `${baseUrl}?config=${encodedConfig}`;
-                
-                // Show button
-                document.getElementById('urlOutput').style.display = 'block';
-                
-                // Scroll to URL
-                document.getElementById('urlOutput').scrollIntoView({ behavior: 'smooth' });
+            const configData = {
+                name: name,
+                q1: { text: q1Text, answer: q1Answer },
+                q2: { text: q2Text, answer: q2Answer },
+                q3: { text: q3Text, answer: q3Answer },
+                photo: compressedPhoto
             };
-            reader.readAsDataURL(photoFile);
+            
+            // Encode configuration as base64
+            const encodedConfig = btoa(JSON.stringify(configData));
+            
+            // Generate URL
+            const baseUrl = window.location.href.split('?')[0];
+            generatedUrl = `${baseUrl}?config=${encodedConfig}`;
+            
+            // Show button
+            document.getElementById('urlOutput').style.display = 'block';
+            
+            // Scroll to URL
+            document.getElementById('urlOutput').scrollIntoView({ behavior: 'smooth' });
         }
 
         function copyUrl() {
